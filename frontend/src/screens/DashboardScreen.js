@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { reportService } from '../services/api';
@@ -17,8 +18,8 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(false);
 
   const currentDate = new Date();
-  const month = currentDate.getMonth() + 1;
-  const year = currentDate.getFullYear();
+  const [month, setMonth] = useState(currentDate.getMonth() + 1);
+  const [year, setYear] = useState(currentDate.getFullYear());
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -56,6 +57,27 @@ export default function DashboardScreen() {
 
   const chartData = getChartData();
 
+  const monthNames = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  const changeMonth = (delta) => {
+    let newMonth = month + delta;
+    let newYear = year;
+
+    if (newMonth > 12) {
+      newMonth = 1;
+      newYear += 1;
+    } else if (newMonth < 1) {
+      newMonth = 12;
+      newYear -= 1;
+    }
+
+    setMonth(newMonth);
+    setYear(newYear);
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -65,9 +87,23 @@ export default function DashboardScreen() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>
-          {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-        </Text>
+        <View style={styles.dateSelector}>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => changeMonth(-1)}
+          >
+            <Text style={styles.dateButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.dateText}>
+            {monthNames[month - 1]} {year}
+          </Text>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => changeMonth(1)}
+          >
+            <Text style={styles.dateButtonText}>→</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {dashboard && (
@@ -139,6 +175,37 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#C85A8E',
+    marginBottom: 15,
+  },
+  dateSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dateButton: {
+    padding: 10,
+    backgroundColor: '#C85A8E',
+    borderRadius: 8,
+  },
+  dateButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  dateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#C85A8E',
+    marginHorizontal: 20,
+    textTransform: 'capitalize',
   },
   subtitle: {
     fontSize: 16,

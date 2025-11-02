@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { transactionService, categoryService } from '../services/api';
 
 export default function AddTransactionScreen({ navigation, route }) {
@@ -19,7 +20,8 @@ export default function AddTransactionScreen({ navigation, route }) {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +32,7 @@ export default function AddTransactionScreen({ navigation, route }) {
       setAmount(editingTransaction.amount.toString());
       setType(editingTransaction.type);
       setCategory(editingTransaction.category);
-      setDate(editingTransaction.date.split('T')[0]);
+      setDate(new Date(editingTransaction.date));
     }
   }, [isEditing]);
 
@@ -41,6 +43,17 @@ export default function AddTransactionScreen({ navigation, route }) {
     } catch (error) {
       console.error('Erro ao carregar categorias:', error);
     }
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+
+  const formatDateBR = (date) => {
+    return date.toLocaleDateString('pt-BR');
   };
 
   const handleSubmit = async () => {
@@ -61,7 +74,7 @@ export default function AddTransactionScreen({ navigation, route }) {
         amount: parseFloat(amount),
         type,
         category,
-        date,
+        date: date.toISOString().split('T')[0],
       };
 
       if (isEditing) {
@@ -176,13 +189,22 @@ export default function AddTransactionScreen({ navigation, route }) {
         </View>
 
         <Text style={styles.label}>Data</Text>
-        <TextInput
-          style={styles.input}
-          value={date}
-          onChangeText={setDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor="#999"
-        />
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateButtonText}>{formatDateBR(date)}</Text>
+        </TouchableOpacity>
+        
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+            locale="pt-BR"
+          />
+        )}
 
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -300,5 +322,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  dateButton: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFB6D9',
+    alignItems: 'center',
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#333',
   },
 });

@@ -29,6 +29,10 @@ export default function TransactionsScreen({ navigation }) {
   }, [filter]);
 
   useEffect(() => {
+    loadTransactions();
+  }, [filter, loadTransactions]);
+
+  useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadTransactions();
     });
