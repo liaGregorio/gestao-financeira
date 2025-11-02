@@ -48,7 +48,7 @@ O backend estará rodando em `http://localhost:3000`
 
 ### Frontend
 
-1. Instale as dependências (já foi feito):
+1. Instale as dependências:
 ```bash
 cd frontend
 npm install
